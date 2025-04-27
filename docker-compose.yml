@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  contract:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/contract
+    command: >
+      bash -c "cargo contract build --release && echo 'Contract built successfully! Find the .contract file in the target directory.'"

@@ -1,0 +1,15 @@
+# Rust artifacts
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE specific files
+.vscode/
+.idea/
+*.iml
+
+# Ink! artifacts
+*.contract
+
+# Misc
+.DS_Store
