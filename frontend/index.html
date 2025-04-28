@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Governance Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/@polkadot/api@10.9.1/bundle-polkadot-api.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@polkadot/extension-dapp@0.46.5/bundle-polkadot-extension-dapp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 8px; }
+        button { padding: 10px 15px; background: #5F30E2; color: white; border: none; cursor: pointer; }
+        .proposal { background: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Polkadot Governance Proposal Tracker</h1>
+    
+    <div id="connect-section">
+        <button id="connectWallet">Connect Wallet</button>
+        <div id="accountInfo" style="display:none;">
+            <p>Connected: <span id="accountAddress"></span></p>
+        </div>
+    </div>
+
+    <hr>
+
+    <div id="app" style="display:none;">
+        <h2>Create New Proposal</h2>
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" placeholder="Proposal title">
+        </div>
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" rows="4" placeholder="Describe your proposal"></textarea>
+        </div>
+        <button id="submitProposal">Submit Proposal</button>
+
+        <h2>Proposals</h2>
+        <button id="loadProposals">Load Proposals</button>
+        <div id="proposalsList"></div>
+    </div>
+
+    <script>
+        // Contract details (will be filled by our startup script)
+        const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS";
+        // We'll use contract metadata for ABI
+        let contractABI;
+        
+        let api;
+        let contract;
+        let currentAccount;
+
+        // Connect to blockchain and contract
+        async function connect() {
+            const { ApiPromise, WsProvider } = polkadotApi;
+            const provider = new WsProvider('ws://localhost:9944');
+            api = await ApiPromise.create({ provider });
+            
+            // Get extensions
+            const { web3Accounts, web3Enable } = polkadotExtensionDapp;
+            await web3Enable('Governance Tracker');
+            const accounts = await web3Accounts();
+            
+            if (accounts.length === 0) {
+                alert('No accounts found. Please install Polkadot{.js} extension');
+                return;
+            }
+            
+            currentAccount = accounts[0];
+            document.getElementById('accountAddress').textContent = currentAccount.address;
+            document.getElementById('accountInfo').style.display = 'block';
+            document.getElementById('app').style.display = 'block';
+            
+            // Fetch contract ABI
+            fetch('/target/ink/metadata.json')
+                .then(response => response.json())
+                .then(metadata => {
+                    // Create contract instance
+                    const { ContractPromise } = polkadotApi.contractPromise;
+                    contract = new ContractPromise(api, metadata, CONTRACT_ADDRESS);
+                })
+                .catch(error => {
+                    console.error('Error loading contract metadata:', error);
+                    alert('Error loading contract metadata');
+                });
+        }
+
+        // Submit a new proposal
+        async function submitProposal() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            
+            if (!title || !description) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                // Call contract to submit proposal
+                await contract.tx
+                    .submitProposal({ storageDepositLimit: null }, title, description)
+                    .signAndSend(currentAccount.address, { signer: currentAccount.signer }, (result) => {
+                        if (result.status.isInBlock) {
+                            alert('Proposal submitted!');
+                            document.getElementById('title').value = '';
+                            document.getElementById('description').value = '';
+                            loadProposals();
+                        }
+                    });
+            } catch (error) {
+                console.error('Error submitting proposal:', error);
+                alert('Error submitting proposal');
+            }
+        }
+
+        // Load and display proposals
+        async function loadProposals() {
+            const proposalsList = document.getElementById('proposalsList');
+            proposalsList.innerHTML = 'Loading...';
+            
+            try {
+                // Get proposal count
+                const { result } = await contract.query.getProposalCount(currentAccount.address);
+                const count = result.toNumber();
+                
+                proposalsList.innerHTML = '';
+                if (count === 0) {
+                    proposalsList.innerHTML = '<p>No proposals yet.</p>';
+                    return;
+                }
+                
+                // Load each proposal
+                for (let i = 0; i < count; i++) {
+                    const { result: proposal } = await contract.query.getProposal(currentAccount.address, i);
+                    
+                    if (proposal.isSome) {
+                        const proposalData = proposal.unwrap();
+                        const div = document.createElement('div');
+                        div.className = 'proposal';
+                        div.innerHTML = `
+                            <h3>${proposalData.title}</h3>
+                            <p>${proposalData.description}</p>
+                            <p>Votes: ${proposalData.votes.toHuman()}</p>
+                            <button class="vote-btn" data-id="${i}">Vote</button>
+                        `;
+                        proposalsList.appendChild(div);
+                    }
+                }
+                
+                // Add event listeners to vote buttons
+                document.querySelectorAll('.vote-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        voteOnProposal(parseInt(this.getAttribute('data-id')));
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading proposals:', error);
+                proposalsList.innerHTML = '<p>Error loading proposals</p>';
+            }
+        }
+
+        // Vote on a proposal
+        async function voteOnProposal(id) {
+            const amountToVote = 1000000000000; // 1 unit
+            
+            try {
+                await contract.tx
+                    .vote({ value: amountToVote, storageDepositLimit: null }, id)
+                    .signAndSend(currentAccount.address, { signer: currentAccount.signer }, (result) => {
+                        if (result.status.isInBlock) {
+                            alert('Vote submitted!');
+                            loadProposals();
+                        }
+                    });
+            } catch (error) {
+                console.error('Error voting:', error);
+                alert('Error voting on proposal');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('connectWallet').addEventListener('click', connect);
+        document.getElementById('submitProposal').addEventListener('click', submitProposal);
+        document.getElementById('loadProposals').addEventListener('click', loadProposals);
+    </script>
+</body>
+</html>
