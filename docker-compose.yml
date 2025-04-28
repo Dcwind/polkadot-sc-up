@@ -8,4 +8,14 @@ services:
       - "9944:9944"
     volumes:
       - ./target:/app/target
-    # No need to override the command here, use the one from Dockerfile
+      - ./frontend/config:/app/frontend/config
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./target:/usr/share/nginx/html/target
+    depends_on:
+      - governance-tracker

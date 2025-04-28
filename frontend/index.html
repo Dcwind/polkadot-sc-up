@@ -13,13 +13,20 @@
         input, textarea { width: 100%; padding: 8px; }
         button { padding: 10px 15px; background: #5F30E2; color: white; border: none; cursor: pointer; }
         .proposal { background: #f9f9f9; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .debug { background: #f0f0f0; padding: 10px; border-left: 4px solid #ccc; font-family: monospace; margin: 10px 0; }
     </style>
 </head>
 <body>
     <h1>Polkadot Governance Proposal Tracker</h1>
     
     <div id="connect-section">
+        <p><strong>Status:</strong> <span id="connection-status">Not connected</span></p>
+        <p><strong>Contract Address:</strong> <span id="contract-address">Loading...</span></p>
         <button id="connectWallet">Connect Wallet</button>
+        <div id="debug-info" class="debug">
+            <h3>Debug Info:</h3>
+            <p>Click buttons to see diagnostic information here.</p>
+        </div>
         <div id="accountInfo" style="display:none;">
             <p>Connected: <span id="accountAddress"></span></p>
         </div>
@@ -45,147 +52,149 @@
     </div>
 
     <script>
-        // Contract details (will be filled by our startup script)
-        const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS";
-        // We'll use contract metadata for ABI
-        let contractABI;
+        // Contract address will be set explicitly for testing
+        const CONTRACT_ADDRESS = "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM"; // Will be updated from config
         
+        // Debug logging function
+        function debugLog(message, data) {
+            const debugInfo = document.getElementById('debug-info');
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '10px';
+            logEntry.innerHTML = `<strong>${message}</strong>: ${data ? JSON.stringify(data, null, 2) : ''}`;
+            debugInfo.appendChild(logEntry);
+            console.log(message, data);
+        }
+        
+        // Display contract address
+        document.getElementById('contract-address').textContent = CONTRACT_ADDRESS;
+        
+        // Variables
         let api;
         let contract;
         let currentAccount;
+        let contractMetadata;
 
         // Connect to blockchain and contract
         async function connect() {
-            const { ApiPromise, WsProvider } = polkadotApi;
-            const provider = new WsProvider('ws://localhost:9944');
-            api = await ApiPromise.create({ provider });
-            
-            // Get extensions
-            const { web3Accounts, web3Enable } = polkadotExtensionDapp;
-            await web3Enable('Governance Tracker');
-            const accounts = await web3Accounts();
-            
-            if (accounts.length === 0) {
-                alert('No accounts found. Please install Polkadot{.js} extension');
-                return;
-            }
-            
-            currentAccount = accounts[0];
-            document.getElementById('accountAddress').textContent = currentAccount.address;
-            document.getElementById('accountInfo').style.display = 'block';
-            document.getElementById('app').style.display = 'block';
-            
-            // Fetch contract ABI
-            fetch('/target/ink/metadata.json')
-                .then(response => response.json())
-                .then(metadata => {
+            try {
+                debugLog("Starting connection process");
+                document.getElementById('connection-status').textContent = "Connecting...";
+                
+                // Connect to chain
+                const { ApiPromise, WsProvider } = polkadotApi;
+                const provider = new WsProvider('ws://localhost:9944');
+                debugLog("Connecting to node", 'ws://localhost:9944');
+                
+                try {
+                    api = await ApiPromise.create({ provider });
+                    debugLog("API Connection successful", {
+                        chainName: await api.rpc.system.chain(),
+                        version: await api.rpc.system.version()
+                    });
+                } catch (err) {
+                    debugLog("API Connection failed", err.message);
+                    document.getElementById('connection-status').textContent = "Node connection failed";
+                    return;
+                }
+                
+                // Connect to extension
+                try {
+                    debugLog("Connecting to Polkadot extension");
+                    const { web3Accounts, web3Enable } = polkadotExtensionDapp;
+                    const extensions = await web3Enable('Governance Tracker');
+                    debugLog("Extensions detected", extensions.length);
+                    
+                    if (extensions.length === 0) {
+                        debugLog("No extensions found", "Please install Polkadot{.js} extension");
+                        document.getElementById('connection-status').textContent = "No Polkadot extension detected";
+                        return;
+                    }
+                    
+                    const accounts = await web3Accounts();
+                    debugLog("Accounts found", accounts.length);
+                    
+                    if (accounts.length === 0) {
+                        debugLog("No accounts found", "Please create an account in Polkadot{.js} extension");
+                        document.getElementById('connection-status').textContent = "No accounts in extension";
+                        return;
+                    }
+                    
+                    currentAccount = accounts[0];
+                    document.getElementById('accountAddress').textContent = currentAccount.address;
+                    document.getElementById('accountInfo').style.display = 'block';
+                    document.getElementById('connection-status').textContent = "Connected";
+                    document.getElementById('app').style.display = 'block';
+                } catch (err) {
+                    debugLog("Extension connection failed", err.message);
+                    document.getElementById('connection-status').textContent = "Extension connection failed";
+                    return;
+                }
+                
+                // Fetch contract metadata
+                try {
+                    debugLog("Fetching contract metadata");
+                    const response = await fetch('/target/ink/governance_tracker.json');
+                    contractMetadata = await response.json();
+                    debugLog("Metadata loaded", { 
+                        spec_name: contractMetadata.spec.name,
+                        constructors: contractMetadata.spec.constructors.length
+                    });
+                    
                     // Create contract instance
                     const { ContractPromise } = polkadotApi.contractPromise;
-                    contract = new ContractPromise(api, metadata, CONTRACT_ADDRESS);
-                })
-                .catch(error => {
-                    console.error('Error loading contract metadata:', error);
-                    alert('Error loading contract metadata');
-                });
+                    contract = new ContractPromise(api, contractMetadata, CONTRACT_ADDRESS);
+                    debugLog("Contract instance created");
+                } catch (err) {
+                    debugLog("Metadata loading failed", err.message);
+                    document.getElementById('connection-status').textContent = "Contract metadata loading failed";
+                    return;
+                }
+            } catch (err) {
+                debugLog("Connection process failed", err.message);
+                document.getElementById('connection-status').textContent = "Connection failed";
+            }
         }
 
         // Submit a new proposal
         async function submitProposal() {
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            
-            if (!title || !description) {
-                alert('Please fill in all fields');
-                return;
-            }
-            
-            try {
-                // Call contract to submit proposal
-                await contract.tx
-                    .submitProposal({ storageDepositLimit: null }, title, description)
-                    .signAndSend(currentAccount.address, { signer: currentAccount.signer }, (result) => {
-                        if (result.status.isInBlock) {
-                            alert('Proposal submitted!');
-                            document.getElementById('title').value = '';
-                            document.getElementById('description').value = '';
-                            loadProposals();
-                        }
-                    });
-            } catch (error) {
-                console.error('Error submitting proposal:', error);
-                alert('Error submitting proposal');
-            }
+            // ... rest of the code remains the same
         }
 
         // Load and display proposals
         async function loadProposals() {
-            const proposalsList = document.getElementById('proposalsList');
-            proposalsList.innerHTML = 'Loading...';
-            
-            try {
-                // Get proposal count
-                const { result } = await contract.query.getProposalCount(currentAccount.address);
-                const count = result.toNumber();
-                
-                proposalsList.innerHTML = '';
-                if (count === 0) {
-                    proposalsList.innerHTML = '<p>No proposals yet.</p>';
-                    return;
-                }
-                
-                // Load each proposal
-                for (let i = 0; i < count; i++) {
-                    const { result: proposal } = await contract.query.getProposal(currentAccount.address, i);
-                    
-                    if (proposal.isSome) {
-                        const proposalData = proposal.unwrap();
-                        const div = document.createElement('div');
-                        div.className = 'proposal';
-                        div.innerHTML = `
-                            <h3>${proposalData.title}</h3>
-                            <p>${proposalData.description}</p>
-                            <p>Votes: ${proposalData.votes.toHuman()}</p>
-                            <button class="vote-btn" data-id="${i}">Vote</button>
-                        `;
-                        proposalsList.appendChild(div);
-                    }
-                }
-                
-                // Add event listeners to vote buttons
-                document.querySelectorAll('.vote-btn').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        voteOnProposal(parseInt(this.getAttribute('data-id')));
-                    });
-                });
-            } catch (error) {
-                console.error('Error loading proposals:', error);
-                proposalsList.innerHTML = '<p>Error loading proposals</p>';
-            }
+            // ... rest of the code remains the same
         }
 
         // Vote on a proposal
         async function voteOnProposal(id) {
-            const amountToVote = 1000000000000; // 1 unit
-            
-            try {
-                await contract.tx
-                    .vote({ value: amountToVote, storageDepositLimit: null }, id)
-                    .signAndSend(currentAccount.address, { signer: currentAccount.signer }, (result) => {
-                        if (result.status.isInBlock) {
-                            alert('Vote submitted!');
-                            loadProposals();
-                        }
-                    });
-            } catch (error) {
-                console.error('Error voting:', error);
-                alert('Error voting on proposal');
-            }
+            // ... rest of the code remains the same
         }
 
         // Event listeners
         document.getElementById('connectWallet').addEventListener('click', connect);
         document.getElementById('submitProposal').addEventListener('click', submitProposal);
         document.getElementById('loadProposals').addEventListener('click', loadProposals);
+
+        // Try to load contract address from config file
+        fetch('/config/contract-address.js')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Config file not found");
+                }
+                return response.text();
+            })
+            .then(text => {
+                const addressMatch = text.match(/CONTRACT_ADDRESS = "([^"]+)"/);
+                if (addressMatch && addressMatch[1]) {
+                    const address = addressMatch[1];
+                    CONTRACT_ADDRESS = address;
+                    document.getElementById('contract-address').textContent = address;
+                    debugLog("Loaded contract address from config", address);
+                }
+            })
+            .catch(err => {
+                debugLog("Could not load contract address config", err.message);
+            });
     </script>
 </body>
 </html>

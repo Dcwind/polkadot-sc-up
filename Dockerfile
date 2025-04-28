@@ -27,21 +27,21 @@ RUN curl -L https://github.com/paritytech/substrate-contracts-node/releases/down
 
 WORKDIR /app
 
-# Copy only Cargo.toml and Cargo.lock first to cache dependencies
-COPY Cargo.toml Cargo.lock* ./
-
-# Create dummy src directory with minimal content to satisfy cargo build
-RUN mkdir -p src && \
-    echo "fn main() {}" > src/lib.rs && \
-    cargo contract build --release || true
-
-# Now copy the actual source code
+# Copy the entire project
 COPY . .
 
-# Build the contract
-RUN cargo contract build --release
+# Build the contract with verbose output to debug
+RUN cargo contract build --release --verbose
+
+# Copy the deployment script
+COPY deploy-and-start.sh /app/
+RUN chmod +x /app/deploy-and-start.sh
+
+# List artifacts directory to verify files
+RUN ls -la /app/target/ink/ || echo "No artifacts directory found"
+RUN find /app/target -name "*.contract" || echo "No contract files found"
 
 EXPOSE 9944
 
-# Default command to run a development node
-CMD ["/usr/local/bin/substrate-contracts-node", "--dev", "--rpc-cors=all", "--rpc-methods=unsafe", "--rpc-external"]
+# Use the script as the entrypoint
+CMD ["/app/deploy-and-start.sh"]
