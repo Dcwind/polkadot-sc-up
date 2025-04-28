@@ -17,7 +17,7 @@ DEPLOYMENT_OUTPUT=$(cargo contract instantiate --suri //Alice --constructor new 
 echo "$DEPLOYMENT_OUTPUT"
 
 # Now try to capture the address from the output
-CONTRACT_ADDRESS=$(echo "$DEPLOYMENT_OUTPUT" | grep -oP '(?<=Contract address: )[a-zA-Z0-9]+' || echo "")
+CONTRACT_ADDRESS=$(echo "$DEPLOYMENT_OUTPUT" | grep -oP '(?<=contract: )[a-zA-Z0-9]+' || echo "")
 
 echo "Contract address extraction result: '$CONTRACT_ADDRESS'"
 
