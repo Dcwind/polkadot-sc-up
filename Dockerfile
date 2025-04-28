@@ -1,25 +1,35 @@
 FROM rust:1.81
 
-# Install dependencies for contract development
+# Install required system dependencies including protobuf compiler
 RUN apt-get update && \
-    apt-get install -y curl git build-essential clang libclang-dev pkg-config libssl-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+    git \
+    clang \
+    cmake \
+    libssl-dev \
+    pkg-config \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Rust tools and cargo-contract
-RUN rustup component add rust-src && \
-    rustup component add clippy && \
+# Install required Rust components
+RUN rustup default 1.81 && \
+    rustup component add rust-src && \
     rustup target add wasm32-unknown-unknown && \
-    cargo install cargo-contract --version 3.2.0 --locked
+    cargo install cargo-contract --version ^3.0.0
 
-# Create working directory
-WORKDIR /contract
+# Clone and build substrate-contracts-node from source
+RUN git clone https://github.com/paritytech/substrate-contracts-node.git && \
+    cd substrate-contracts-node && \
+    cargo build --release && \
+    cp ./target/release/substrate-contracts-node /usr/local/bin/
 
-# Copy files individually to ensure they exist
-COPY Cargo.toml ./ 
-COPY lib.rs ./
+WORKDIR /app
+COPY . .
 
-# Set the CMD to build directly into the mounted volume directory
-CMD bash -c "\
-    cargo contract build --release --target-dir /contract/target/ink && \
-    echo '✅ Contract built successfully into /contract/target/ink!'"
+# Build the contract
+RUN cargo contract build --release
+
+EXPOSE 9944
+
+# Default command to run a development node
+CMD ["substrate-contracts-node", "--dev", "--rpc-cors=all", "--rpc-methods=unsafe", "--rpc-external"]

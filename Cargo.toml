@@ -1,15 +1,13 @@
 [package]
-name = "staking"
+name = "governance_tracker"
 version = "0.1.0"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["[Your Name] <[your.email@example.com]>"]
 edition = "2021"
-license = "MIT"
-description = "Token staking smart contract in ink!"
 
 [dependencies]
-ink = { version = "4.2.0", default-features = false }
-scale = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
-scale-info = { version = "2.3.1", default-features = false, features = ["derive"] }
+ink = { version = "4.3", default-features = false }
+scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
+scale-info = { version = "2.9", default-features = false, features = ["derive"] }
 
 [lib]
 path = "lib.rs"

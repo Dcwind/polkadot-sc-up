@@ -1,11 +1,12 @@
 version: '3'
 
 services:
-  contract:
+  governance-tracker:
     build:
       context: .
       dockerfile: Dockerfile
+    ports:
+      - "9944:9944"
     volumes:
-      - ./:/contract
-    command: >
-      bash -c "cargo contract build --release && echo 'Contract built successfully! Find the .contract file in the target directory.'"
+      - ./target:/app/target
+    command: ["substrate-contracts-node", "--dev", "--rpc-cors=all", "--rpc-methods=unsafe", "--rpc-external"]
