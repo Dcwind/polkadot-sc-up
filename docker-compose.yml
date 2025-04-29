@@ -9,13 +9,23 @@ services:
     volumes:
       - ./target:/app/target
       - ./frontend/config:/app/frontend/config
+    networks:
+      - governance-network
 
   frontend:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     ports:
       - "8080:80"
     volumes:
-      - ./frontend:/usr/share/nginx/html
       - ./target:/usr/share/nginx/html/target
+      - ./frontend/config:/usr/share/nginx/html/config
     depends_on:
       - governance-tracker
+    networks:
+      - governance-network
+
+networks:
+  governance-network:
+    driver: bridge

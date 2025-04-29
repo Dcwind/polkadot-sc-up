@@ -1,0 +1,22 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.3.1"
+  },
+  "dependencies": {
+    "@polkadot/api": "^10.9.1",
+    "@polkadot/api-contract": "^10.9.1",
+    "@polkadot/extension-dapp": "^0.46.5",
+    "@polkadot/keyring": "^12.3.1",
+    "@polkadot/util": "^12.3.1",
+    "@polkadot/util-crypto": "^12.3.1"
+  }
+}

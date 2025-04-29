@@ -4,7 +4,6 @@
 mod governance_tracker {
     use ink::storage::Mapping;
     use ink::prelude::string::String;
-    use ink::prelude::vec::Vec;
 
     #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
     #[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
@@ -13,7 +12,7 @@ mod governance_tracker {
         description: String,
         votes: Balance,
         creator: AccountId,
-        supporters: Vec<AccountId>,
+        supporter_count: u32,
     }
 
     #[ink(storage)]
@@ -22,6 +21,7 @@ mod governance_tracker {
         proposal_count: u32,
         min_vote_amount: Balance,
         owner: AccountId,
+        voters: Mapping<(u32, AccountId), ()>,
     }
 
     #[ink(event)]
@@ -48,6 +48,8 @@ mod governance_tracker {
         ProposalNotFound,
         InsufficientVoteAmount,
         AlreadyVoted,
+        TitleTooLong,
+        DescriptionTooLong,
     }
 
     pub type Result<T> = core::result::Result<T, Error>;
@@ -60,20 +62,28 @@ mod governance_tracker {
                 proposal_count: 0,
                 min_vote_amount,
                 owner: Self::env().caller(),
+                voters: Mapping::default(),
             }
         }
 
         #[ink(message)]
-        pub fn submit_proposal(&mut self, title: String, description: String) -> u32 {
+        pub fn submit_proposal(&mut self, title: String, description: String) -> Result<u32> {
+            if title.as_bytes().len() > 32 {
+                return Err(Error::TitleTooLong);
+            }
+            if description.as_bytes().len() > 128 {
+                return Err(Error::DescriptionTooLong);
+            }
+
             let creator = self.env().caller();
             let proposal_id = self.proposal_count;
 
             let proposal = Proposal {
-                title: title.clone(),
+                title,
                 description,
                 votes: 0,
                 creator,
-                supporters: Vec::new(),
+                supporter_count: 0,
             };
 
             self.proposals.insert(proposal_id, &proposal);
@@ -82,10 +92,15 @@ mod governance_tracker {
             self.env().emit_event(ProposalCreated {
                 proposal_id,
                 creator,
-                title,
+                title: proposal.title.clone(),
+            });
+            self.env().emit_event(ProposalCreated {
+                proposal_id,
+                creator,
+                title: String::from("Stored"),
             });
 
-            proposal_id
+            Ok(proposal_id)
         }
 
         #[ink(message, payable)]
@@ -98,16 +113,16 @@ mod governance_tracker {
             }
 
             let mut proposal = self.proposals.get(proposal_id).ok_or(Error::ProposalNotFound)?;
-            
-            // Check if user already voted
-            if proposal.supporters.contains(&caller) {
+
+            if self.voters.get((proposal_id, caller)).is_some() {
                 return Err(Error::AlreadyVoted);
             }
 
-            // Update proposal
             proposal.votes += vote_amount;
-            proposal.supporters.push(caller);
+            proposal.supporter_count += 1;
             self.proposals.insert(proposal_id, &proposal);
+
+            self.voters.insert((proposal_id, caller), &());
 
             self.env().emit_event(VoteCast {
                 proposal_id,
@@ -144,17 +159,18 @@ mod governance_tracker {
         fn test_create_proposal() {
             let mut tracker = GovernanceTracker::new(1000);
             let proposal_id = tracker.submit_proposal(
-                String::from("Test Proposal"),
-                String::from("This is a test proposal"),
-            );
+                String::from("Test"),
+                String::from("Test desc"),
+            ).unwrap();
             
             assert_eq!(proposal_id, 0);
             assert_eq!(tracker.get_proposal_count(), 1);
             
             let proposal = tracker.get_proposal(0).unwrap();
-            assert_eq!(proposal.title, String::from("Test Proposal"));
-            assert_eq!(proposal.description, String::from("This is a test proposal"));
+            assert_eq!(proposal.title, String::from("Test"));
+            assert_eq!(proposal.description, String::from("Test desc"));
             assert_eq!(proposal.votes, 0);
+            assert_eq!(proposal.supporter_count, 0);
         }
 
         #[ink::test]
@@ -162,13 +178,11 @@ mod governance_tracker {
             let accounts = test::default_accounts::<DefaultEnvironment>();
             let mut tracker = GovernanceTracker::new(1000);
             
-            // Create a proposal
             let proposal_id = tracker.submit_proposal(
-                String::from("Test Proposal"),
-                String::from("This is a test proposal"),
-            );
+                String::from("Test"),
+                String::from("Test desc"),
+            ).unwrap();
             
-            // Vote on the proposal
             test::set_caller::<DefaultEnvironment>(accounts.bob);
             test::set_value_transferred::<DefaultEnvironment>(2000);
             
@@ -176,7 +190,7 @@ mod governance_tracker {
             
             let proposal = tracker.get_proposal(proposal_id).unwrap();
             assert_eq!(proposal.votes, 2000);
-            assert_eq!(proposal.supporters.len(), 1);
+            assert_eq!(proposal.supporter_count, 1);
         }
 
         #[ink::test]
@@ -185,14 +199,25 @@ mod governance_tracker {
             let mut tracker = GovernanceTracker::new(1000);
             
             let proposal_id = tracker.submit_proposal(
-                String::from("Test Proposal"),
-                String::from("This is a test proposal"),
-            );
+                String::from("Test"),
+                String::from("Test desc"),
+            ).unwrap();
             
             test::set_caller::<DefaultEnvironment>(accounts.bob);
-            test::set_value_transferred::<DefaultEnvironment>(500); // Less than min amount
+            test::set_value_transferred::<DefaultEnvironment>(500);
             
             assert_eq!(tracker.vote(proposal_id), Err(Error::InsufficientVoteAmount));
+        }
+
+        #[ink::test]
+        fn test_title_too_long() {
+            let mut tracker = GovernanceTracker::new(1000);
+            let long_title = String::from_utf8(vec![b'a'; 33]).unwrap();
+            let result = tracker.submit_proposal(
+                long_title,
+                String::from("Test desc"),
+            );
+            assert_eq!(result, Err(Error::TitleTooLong));
         }
     }
 }
