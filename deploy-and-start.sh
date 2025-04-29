@@ -13,7 +13,7 @@ echo "Found contract file: $CONTRACT_FILE"
 
 # Deploy the contract with execution flag to actually deploy it
 echo "Deploying contract..."
-DEPLOYMENT_OUTPUT=$(cargo contract instantiate --suri //Alice --constructor new --args 133000 --url ws://localhost:9944 $CONTRACT_FILE --execute)
+DEPLOYMENT_OUTPUT=$(cargo contract instantiate --suri //Alice --constructor new --args 1000000000000 --url ws://localhost:9944 $CONTRACT_FILE --execute)
 echo "$DEPLOYMENT_OUTPUT"
 
 # Now try to capture the address from the output

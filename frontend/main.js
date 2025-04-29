@@ -163,7 +163,6 @@ async function loadProposals() {
           return;
       }
 
-      // Parse u32 from output.asOk
       const proposalCount = countResult.output.asOk.toNumber();
       debugLog("Parsed proposalCount", proposalCount);
       
@@ -183,14 +182,17 @@ async function loadProposals() {
               const proposal = proposalResult.output.asOk.toJSON();
               debugLog(`Proposal`, { id: i, data: proposal });
               
+              // Scale votes to UNIT (divide by 10^12)
+              const scaledVotes = (proposal.votes / 1000000000000).toFixed(2);
+              
               const proposalElement = document.createElement('div');
               proposalElement.className = 'proposal';
               proposalElement.innerHTML = `
                   <h3>${proposal.title}</h3>
                   <p>${proposal.description}</p>
-                  <p><strong>Votes:</strong> ${proposal.votes}</p>
+                  <p><strong>Votes:</strong> ${scaledVotes} UNIT</p>
                   <p><strong>Creator:</strong> ${proposal.creator}</p>
-                  <p><strong>Supporters:</strong> ${proposal.supporter_count}</p>
+                  <p><strong>Supporters:</strong> ${proposal.supporters}</p>
                   <button class="vote-button" data-id="${i}">Vote</button>
               `;
               proposalsList.appendChild(proposalElement);
