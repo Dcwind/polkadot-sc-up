@@ -8,6 +8,9 @@ NODE_PID=$!
 sleep 8
 
 # Find the contract file
+ls /app/
+ls /app/target
+
 CONTRACT_FILE=$(find /app/target -name "*.contract" | head -1)
 echo "Found contract file: $CONTRACT_FILE"
 
