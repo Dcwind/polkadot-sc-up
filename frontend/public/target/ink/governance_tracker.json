@@ -1,0 +1,1758 @@
+{
+  "source": {
+    "hash": "0xadae07bf34762c2b0f758295dfebdb384eea5a025f7ccc1d8947d1cd47b93089",
+    "language": "ink! 4.3.0",
+    "compiler": "rustc 1.81.0",
+    "build_info": {
+      "build_mode": "Release",
+      "cargo_contract_version": "3.2.0",
+      "rust_toolchain": "stable-x86_64-unknown-linux-gnu",
+      "wasm_opt_settings": {
+        "keep_debug_symbols": false,
+        "optimization_passes": "Z"
+      }
+    }
+  },
+  "contract": {
+    "name": "governance_tracker",
+    "version": "0.1.0",
+    "authors": [
+      "[Your Name] <[your.email@example.com]>"
+    ]
+  },
+  "spec": {
+    "constructors": [
+      {
+        "args": [
+          {
+            "label": "min_deposit",
+            "type": {
+              "displayName": [
+                "Balance"
+              ],
+              "type": 7
+            }
+          },
+          {
+            "label": "voting_period",
+            "type": {
+              "displayName": [
+                "BlockNumber"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "label": "supported_assets",
+            "type": {
+              "displayName": [
+                "Vec"
+              ],
+              "type": 8
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          "Constructor"
+        ],
+        "label": "new",
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink_primitives",
+            "ConstructorResult"
+          ],
+          "type": 9
+        },
+        "selector": "0x9bae9d5e"
+      }
+    ],
+    "docs": [],
+    "environment": {
+      "accountId": {
+        "displayName": [
+          "AccountId"
+        ],
+        "type": 1
+      },
+      "balance": {
+        "displayName": [
+          "Balance"
+        ],
+        "type": 7
+      },
+      "blockNumber": {
+        "displayName": [
+          "BlockNumber"
+        ],
+        "type": 4
+      },
+      "chainExtension": {
+        "displayName": [
+          "ChainExtension"
+        ],
+        "type": 30
+      },
+      "hash": {
+        "displayName": [
+          "Hash"
+        ],
+        "type": 28
+      },
+      "maxEventTopics": 4,
+      "timestamp": {
+        "displayName": [
+          "Timestamp"
+        ],
+        "type": 29
+      }
+    },
+    "events": [
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "creator",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "title",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "docs": [
+          "Events"
+        ],
+        "label": "ProposalCreated"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "voter",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "in_favor",
+            "type": {
+              "displayName": [
+                "bool"
+              ],
+              "type": 5
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "amount",
+            "type": {
+              "displayName": [
+                "Balance"
+              ],
+              "type": 7
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "asset_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "docs": [],
+        "label": "Voted"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "result",
+            "type": {
+              "displayName": [
+                "Option"
+              ],
+              "type": 21
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "referendum_index",
+            "type": {
+              "displayName": [
+                "Option"
+              ],
+              "type": 22
+            }
+          }
+        ],
+        "docs": [],
+        "label": "ProposalClosed"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "docs": [],
+        "label": "ProposalCancelled"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "error",
+            "type": {
+              "displayName": [
+                "Error"
+              ],
+              "type": 17
+            }
+          }
+        ],
+        "docs": [],
+        "label": "ProposalSubmissionFailed"
+      },
+      {
+        "args": [
+          {
+            "docs": [],
+            "indexed": true,
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "target_chain",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "docs": [],
+            "indexed": false,
+            "label": "message",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "docs": [],
+        "label": "CrossChainMessage"
+      }
+    ],
+    "lang_error": {
+      "displayName": [
+        "ink",
+        "LangError"
+      ],
+      "type": 11
+    },
+    "messages": [
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get minimum deposit"
+        ],
+        "label": "get_min_deposit",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 12
+        },
+        "selector": "0xe8ad4312"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get owner"
+        ],
+        "label": "get_owner",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 13
+        },
+        "selector": "0x07fcd0b1"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get supported assets"
+        ],
+        "label": "get_supported_assets",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 14
+        },
+        "selector": "0x3c953fec"
+      },
+      {
+        "args": [
+          {
+            "label": "title",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          },
+          {
+            "label": "description",
+            "type": {
+              "displayName": [
+                "String"
+              ],
+              "type": 0
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Submit a new proposal"
+        ],
+        "label": "submit_proposal",
+        "mutates": true,
+        "payable": true,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 15
+        },
+        "selector": "0xc4d32d79"
+      },
+      {
+        "args": [
+          {
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "label": "asset_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Vote in favor with a specific asset"
+        ],
+        "label": "vote_for",
+        "mutates": true,
+        "payable": true,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 15
+        },
+        "selector": "0x8293dd33"
+      },
+      {
+        "args": [
+          {
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "label": "asset_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Vote against with a specific asset"
+        ],
+        "label": "vote_against",
+        "mutates": true,
+        "payable": true,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 15
+        },
+        "selector": "0x3d516029"
+      },
+      {
+        "args": [
+          {
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Close a proposal and submit to Democracy pallet if in favor"
+        ],
+        "label": "close_vote",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 15
+        },
+        "selector": "0x7c628067"
+      },
+      {
+        "args": [
+          {
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Cancel a proposal"
+        ],
+        "label": "cancel_proposal",
+        "mutates": true,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 15
+        },
+        "selector": "0xe204dd12"
+      },
+      {
+        "args": [
+          {
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Get a proposal"
+        ],
+        "label": "get_proposal",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 18
+        },
+        "selector": "0xba4dc5ec"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get proposal count"
+        ],
+        "label": "get_proposal_count",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 23
+        },
+        "selector": "0x63929fbf"
+      },
+      {
+        "args": [],
+        "default": false,
+        "docs": [
+          " Get voting period"
+        ],
+        "label": "get_voting_period",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 23
+        },
+        "selector": "0x058275d9"
+      },
+      {
+        "args": [
+          {
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          },
+          {
+            "label": "voter",
+            "type": {
+              "displayName": [
+                "AccountId"
+              ],
+              "type": 1
+            }
+          },
+          {
+            "label": "asset_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Get voter stakes for a proposal and asset"
+        ],
+        "label": "get_voter_stakes",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 24
+        },
+        "selector": "0x92c2c055"
+      },
+      {
+        "args": [
+          {
+            "label": "proposal_id",
+            "type": {
+              "displayName": [
+                "u32"
+              ],
+              "type": 4
+            }
+          }
+        ],
+        "default": false,
+        "docs": [
+          " Get voters for a proposal"
+        ],
+        "label": "get_voters",
+        "mutates": false,
+        "payable": false,
+        "returnType": {
+          "displayName": [
+            "ink",
+            "MessageResult"
+          ],
+          "type": 26
+        },
+        "selector": "0x0cc0bbf3"
+      }
+    ]
+  },
+  "storage": {
+    "root": {
+      "layout": {
+        "struct": {
+          "fields": [
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "struct": {
+                      "fields": [
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 0
+                            }
+                          },
+                          "name": "title"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 0
+                            }
+                          },
+                          "name": "description"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 1
+                            }
+                          },
+                          "name": "creator"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 4
+                            }
+                          },
+                          "name": "supporter_count"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 4
+                            }
+                          },
+                          "name": "supporter_count_against"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 5
+                            }
+                          },
+                          "name": "closed"
+                        },
+                        {
+                          "layout": {
+                            "enum": {
+                              "dispatchKey": "0x12307cb1",
+                              "name": "Option",
+                              "variants": {
+                                "0": {
+                                  "fields": [],
+                                  "name": "None"
+                                },
+                                "1": {
+                                  "fields": [
+                                    {
+                                      "layout": {
+                                        "leaf": {
+                                          "key": "0x12307cb1",
+                                          "ty": 0
+                                        }
+                                      },
+                                      "name": "0"
+                                    }
+                                  ],
+                                  "name": "Some"
+                                }
+                              }
+                            }
+                          },
+                          "name": "result"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 4
+                            }
+                          },
+                          "name": "deadline"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 6
+                            }
+                          },
+                          "name": "for_voters"
+                        },
+                        {
+                          "layout": {
+                            "leaf": {
+                              "key": "0x12307cb1",
+                              "ty": 6
+                            }
+                          },
+                          "name": "against_voters"
+                        },
+                        {
+                          "layout": {
+                            "enum": {
+                              "dispatchKey": "0x12307cb1",
+                              "name": "Option",
+                              "variants": {
+                                "0": {
+                                  "fields": [],
+                                  "name": "None"
+                                },
+                                "1": {
+                                  "fields": [
+                                    {
+                                      "layout": {
+                                        "leaf": {
+                                          "key": "0x12307cb1",
+                                          "ty": 4
+                                        }
+                                      },
+                                      "name": "0"
+                                    }
+                                  ],
+                                  "name": "Some"
+                                }
+                              }
+                            }
+                          },
+                          "name": "referendum_index"
+                        }
+                      ],
+                      "name": "Proposal"
+                    }
+                  },
+                  "root_key": "0x12307cb1"
+                }
+              },
+              "name": "proposals"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 4
+                }
+              },
+              "name": "proposal_count"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 7
+                }
+              },
+              "name": "min_deposit"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 4
+                }
+              },
+              "name": "voting_period"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 1
+                }
+              },
+              "name": "owner"
+            },
+            {
+              "layout": {
+                "root": {
+                  "layout": {
+                    "leaf": {
+                      "key": "0x5cf396f1",
+                      "ty": 7
+                    }
+                  },
+                  "root_key": "0x5cf396f1"
+                }
+              },
+              "name": "voter_stakes"
+            },
+            {
+              "layout": {
+                "leaf": {
+                  "key": "0x00000000",
+                  "ty": 8
+                }
+              },
+              "name": "supported_assets"
+            }
+          ],
+          "name": "GovernanceTracker"
+        }
+      },
+      "root_key": "0x00000000"
+    }
+  },
+  "types": [
+    {
+      "id": 0,
+      "type": {
+        "def": {
+          "primitive": "str"
+        }
+      }
+    },
+    {
+      "id": 1,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 2,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": [
+          "ink_primitives",
+          "types",
+          "AccountId"
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "type": {
+        "def": {
+          "array": {
+            "len": 32,
+            "type": 3
+          }
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": {
+        "def": {
+          "primitive": "u8"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": {
+        "def": {
+          "primitive": "u32"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": {
+        "def": {
+          "primitive": "bool"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 1
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": {
+        "def": {
+          "primitive": "u128"
+        }
+      }
+    },
+    {
+      "id": 8,
+      "type": {
+        "def": {
+          "sequence": {
+            "type": 4
+          }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 10
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 10
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "type": {
+        "def": {
+          "tuple": []
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 1,
+                "name": "CouldNotReadInput"
+              }
+            ]
+          }
+        },
+        "path": [
+          "ink_primitives",
+          "LangError"
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 7
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 7
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 1
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 1
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 8
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 8
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 16
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 16
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 10
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 17
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 10
+          },
+          {
+            "name": "E",
+            "type": 17
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "ProposalNotFound"
+              },
+              {
+                "index": 1,
+                "name": "ProposalClosed"
+              },
+              {
+                "index": 2,
+                "name": "InsufficientDeposit"
+              },
+              {
+                "index": 3,
+                "name": "NotCreator"
+              },
+              {
+                "index": 4,
+                "name": "NotOwner"
+              },
+              {
+                "index": 5,
+                "name": "VotingPeriodEnded"
+              },
+              {
+                "index": 6,
+                "name": "AlreadyClosed"
+              },
+              {
+                "index": 7,
+                "name": "InvalidAsset"
+              },
+              {
+                "index": 8,
+                "name": "ReferendumSubmissionFailed"
+              }
+            ]
+          }
+        },
+        "path": [
+          "governance_tracker",
+          "governance_tracker",
+          "Error"
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 19
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 19
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 20
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 20
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "name": "title",
+                "type": 0,
+                "typeName": "String"
+              },
+              {
+                "name": "description",
+                "type": 0,
+                "typeName": "String"
+              },
+              {
+                "name": "creator",
+                "type": 1,
+                "typeName": "AccountId"
+              },
+              {
+                "name": "supporter_count",
+                "type": 4,
+                "typeName": "u32"
+              },
+              {
+                "name": "supporter_count_against",
+                "type": 4,
+                "typeName": "u32"
+              },
+              {
+                "name": "closed",
+                "type": 5,
+                "typeName": "bool"
+              },
+              {
+                "name": "result",
+                "type": 21,
+                "typeName": "Option<String>"
+              },
+              {
+                "name": "deadline",
+                "type": 4,
+                "typeName": "BlockNumber"
+              },
+              {
+                "name": "for_voters",
+                "type": 6,
+                "typeName": "Vec<AccountId>"
+              },
+              {
+                "name": "against_voters",
+                "type": 6,
+                "typeName": "Vec<AccountId>"
+              },
+              {
+                "name": "referendum_index",
+                "type": 22,
+                "typeName": "Option<u32>"
+              }
+            ]
+          }
+        },
+        "path": [
+          "governance_tracker",
+          "governance_tracker",
+          "Proposal"
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 0
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 0
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "index": 0,
+                "name": "None"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 4
+                  }
+                ],
+                "index": 1,
+                "name": "Some"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 4
+          }
+        ],
+        "path": [
+          "Option"
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 4
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 4
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 25
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 25
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 25,
+      "type": {
+        "def": {
+          "tuple": [
+            7,
+            7
+          ]
+        }
+      }
+    },
+    {
+      "id": 26,
+      "type": {
+        "def": {
+          "variant": {
+            "variants": [
+              {
+                "fields": [
+                  {
+                    "type": 27
+                  }
+                ],
+                "index": 0,
+                "name": "Ok"
+              },
+              {
+                "fields": [
+                  {
+                    "type": 11
+                  }
+                ],
+                "index": 1,
+                "name": "Err"
+              }
+            ]
+          }
+        },
+        "params": [
+          {
+            "name": "T",
+            "type": 27
+          },
+          {
+            "name": "E",
+            "type": 11
+          }
+        ],
+        "path": [
+          "Result"
+        ]
+      }
+    },
+    {
+      "id": 27,
+      "type": {
+        "def": {
+          "tuple": [
+            6,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "id": 28,
+      "type": {
+        "def": {
+          "composite": {
+            "fields": [
+              {
+                "type": 2,
+                "typeName": "[u8; 32]"
+              }
+            ]
+          }
+        },
+        "path": [
+          "ink_primitives",
+          "types",
+          "Hash"
+        ]
+      }
+    },
+    {
+      "id": 29,
+      "type": {
+        "def": {
+          "primitive": "u64"
+        }
+      }
+    },
+    {
+      "id": 30,
+      "type": {
+        "def": {
+          "variant": {}
+        },
+        "path": [
+          "ink_env",
+          "types",
+          "NoChainExtension"
+        ]
+      }
+    }
+  ],
+  "version": "4"
+}

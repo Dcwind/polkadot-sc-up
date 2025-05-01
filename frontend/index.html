@@ -21,10 +21,6 @@
         <p><strong>Status:</strong> <span id="connection-status">Not connected</span></p>
         <p><strong>Contract Address:</strong> <span id="contract-address">Loading...</span></p>
         <button id="connectWallet">Connect Wallet</button>
-        <div id="debug-info" class="debug">
-            <h3>Debug Info:</h3>
-            <p>Click buttons to see diagnostic information here.</p>
-        </div>
         <div id="accountInfo" style="display:none;">
             <p>Connected: <span id="accountAddress"></span></p>
         </div>
@@ -47,6 +43,11 @@
         <h2>Proposals</h2>
         <button id="loadProposals">Load Proposals</button>
         <div id="proposalsList"></div>
+    </div>
+
+    <div id="debug-info" class="debug">
+        <h3>Debug Info:</h3>
+        <p>Click buttons to see diagnostic information here.</p>
     </div>
 
     <script type="module" src="/main.js"></script>
