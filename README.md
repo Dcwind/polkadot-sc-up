@@ -12,6 +12,9 @@ The Polkadot Governance Tracker is a proof-of-concept smart contract showcasing 
 
 The contract is deployed using `substrate-contracts-node` for local testing on a development testnet, leveraging Polkadot’s RISC-V-compatible Virtual Machine (PVM). The project addresses the hackathon’s goals by integrating governance, multi-asset voting, and cross-chain awareness, with a user-friendly frontend to enhance accessibility.
 
+## Demo Video incl. Screenshots
+[Please find the demo video here on YouTube.](https://youtu.be/7j9jQTNGkIY)
+
 ## Features
 - **Proposal Management**: Users can submit, vote on, close, or cancel governance proposals.
 - **Multi-Asset Voting**: Supports voting with multiple assets (e.g., native UNIT as `asset_id: 0`, and placeholder assets `1`, `2`).
