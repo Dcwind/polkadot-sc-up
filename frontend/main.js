@@ -9,6 +9,7 @@ let currentAccount;
 let contractMetadata;
 let minDeposit = 10_000_000_000; // Fallback value
 let supportedAssets = [];
+let isDebugVisible = false; // Track debug log visibility
 
 function debugLog(message, data) {
     const debugInfo = document.getElementById('debug-info');
@@ -20,7 +21,29 @@ function debugLog(message, data) {
     console.log(message, data);
 }
 
+function toggleDebugLog() {
+    isDebugVisible = !isDebugVisible;
+    const debugInfo = document.getElementById('debug-info');
+    debugInfo.style.display = isDebugVisible ? 'block' : 'none';
+    const toggleButton = document.getElementById('toggleDebug');
+    toggleButton.textContent = isDebugVisible ? 'Hide Debug Log' : 'Show Debug Log';
+    debugLog('Debug log visibility toggled', { isDebugVisible });
+}
+
 document.getElementById('contract-address').textContent = CONTRACT_ADDRESS;
+
+// Initialize debug toggle button
+document.addEventListener('DOMContentLoaded', () => {
+    const debugToggleContainer = document.createElement('div');
+    debugToggleContainer.style.marginBottom = '10px';
+    debugToggleContainer.innerHTML = `
+        <button id="toggleDebug" class="debug-toggle-button">Show Debug Log</button>
+    `;
+    const debugInfo = document.getElementById('debug-info');
+    debugInfo.parentNode.insertBefore(debugToggleContainer, debugInfo);
+    debugInfo.style.display = 'none'; // Hide by default
+    document.getElementById('toggleDebug').addEventListener('click', toggleDebugLog);
+});
 
 async function connect() {
     try {
@@ -211,7 +234,7 @@ async function submitProposal() {
                         if (event.section === 'system' && event.method === 'ExtrinsicFailed') {
                             hasError = true;
                             const errorData = event.data.toHuman();
-                            errorMessage = JSON.stringify(errorData);
+                            submissionFailedError = JSON.stringify(errorData);
                             debugLog("Vote transaction failed", errorData);
                         }
                         if (event.section === 'contracts' && event.method === 'ContractEmitted') {

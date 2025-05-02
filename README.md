@@ -1,10 +1,20 @@
 # Polkadot Governance Tracker
 
-This project is a decentralized governance smart contract built with ink! for the Polkadot ecosystem, designed for the Polkadot and Smart Contracts sub-track bounty. The contract enables users to submit proposals, vote using multiple assets (including the native UNIT/ROC token), and simulate integration with the Polkadot Democracy pallet. It also supports cross-chain awareness by emitting events for other parachains. A JavaScript frontend (`main.js`) provides a user interface to interact with the contract, deployed on a local `substrate-contracts-node` or the Rococo testnet.
+This is a repository that contains a submission for 2025 Polkadot Scalability Hackathon. The project is a decentralized governance smart contract built with ink! for the Polkadot ecosystem, designed for the Polkadot and Smart Contracts sub-track hackathon. The contract enables users to submit proposals, vote using multiple assets (including the native UNIT token), and simulate integration with the Polkadot Democracy pallet. It also supports cross-chain awareness by emitting events for other parachains. A JavaScript frontend (`main.js`) provides a user interface to interact with the contract, deployed on a local `substrate-contracts-node` dev testnet.
+
+## Project Description
+The Polkadot Governance Tracker is a proof-of-concept smart contract showcasing Polkadot’s capabilities in governance, multi-asset systems, and cross-chain interoperability. Built using ink! `4.3`, the contract allows users to:
+- **Submit Proposals**: Create governance proposals with a title, description, and minimum deposit (1 UNIT).
+- **Vote with Multiple Assets**: Support voting with the native UNIT token (`asset_id: 0`) and placeholder assets (`1`, `2`), demonstrating Polkadot’s multi-asset potential.
+- **Simulate Democracy Pallet Integration**: Assign a `referendum_index` to passing proposals, mimicking submission to the Democracy pallet.
+- **Emit Cross-Chain Events**: Broadcast `CrossChainMessage` events to other parachains (e.g., `target_chain: 1000`) for proposal creation and referendum submission.
+- **Interact via Frontend**: A Vite-based JavaScript frontend (`main.js`) enables users to manage proposals, vote, and view referendum status through a web interface served on `http://localhost:8080`.
+
+The contract is deployed using `substrate-contracts-node` for local testing on a development testnet, leveraging Polkadot’s RISC-V-compatible Virtual Machine (PVM). The project addresses the hackathon’s goals by integrating governance, multi-asset voting, and cross-chain awareness, with a user-friendly frontend to enhance accessibility.
 
 ## Features
 - **Proposal Management**: Users can submit, vote on, close, or cancel governance proposals.
-- **Multi-Asset Voting**: Supports voting with multiple assets (e.g., native UNIT/ROC as `asset_id: 0`, and placeholder assets `1`, `2`).
+- **Multi-Asset Voting**: Supports voting with multiple assets (e.g., native UNIT as `asset_id: 0`, and placeholder assets `1`, `2`).
 - **Democracy Pallet Integration**: Simulates submitting passing proposals to the Democracy pallet by assigning a `referendum_index`.
 - **Cross-Chain Awareness**: Emits `CrossChainMessage` events to notify other parachains about proposal creation and referendum submission.
 - **Frontend Interface**: A web-based UI (`main.js`) allows users to interact with the contract, displaying proposal details, votes, and referendum status.
@@ -26,8 +36,8 @@ This project requires a Linux environment (e.g., Ubuntu 20.04 or later). Below a
   - For serving the frontend on `http://localhost:8080`.
 - **Netcat**:
   - For checking node availability.
-- **Polkadot.js Apps** (optional):
-  - For manual testing or Rococo deployment.
+- **Polkadot.js Wallet Extension**:
+  - For simulating interactions with the smart contract.
 - **Contract Dependencies** (specified in `Cargo.toml`):
   - `ink` (version `4.3`).
   - `parity-scale-codec` (version `3`, with `derive` feature).
@@ -36,7 +46,7 @@ This project requires a Linux environment (e.g., Ubuntu 20.04 or later). Below a
 ### System Requirements
 - Linux OS (tested on Ubuntu 20.04/22.04).
 - At least 4GB RAM and 20GB free disk space.
-- Internet connection for installing dependencies and fetching Rococo testnet tokens.
+- Internet connection for installing dependencies.
 
 ## Environment Setup (Linux)
 
@@ -112,9 +122,9 @@ The `start.sh` script builds the contract, starts a local `substrate-contracts-n
      - Builds the contract (`cargo contract build --release`).
      - Starts `substrate-contracts-node` on `ws://localhost:9944`.
      - Deploys the contract with constructor arguments:
-       - `min_deposit`: `1000000000000` Planck (1 ROC/UNIT).
+       - `min_deposit`: `1000000000000` Planck (1 UNIT).
        - `voting_period`: `100800` blocks (~7 days at 6 seconds/block).
-       - `supported_assets`: `[0, 1, 2]` (native UNIT/ROC as `0`, placeholders `1`, `2`).
+       - `supported_assets`: `[0, 1, 2]` (native UNIT as `0`, placeholders `1`, `2`).
      - Saves the contract address to `frontend/config/contract-address.js`.
      - Copies metadata to `frontend/public/target/ink/governance_tracker.json`.
    - **Output**: Look for `Contract deployed successfully at address: 5XXX...`. The node continues running.
@@ -144,47 +154,9 @@ The `frontend.sh` script builds the frontend and serves it via Nginx on `http://
      - Restarts Nginx.
    - **Output**: Look for `Nginx is serving on port 8080` and instructions to open `http://localhost:8080`.
 
-4. **Access the Frontend**:
+3. **Access the Frontend**:
    - Open `http://localhost:8080` in a browser (e.g., Chrome).
-   - Connect with one of the following development accounts defined by Substrate Node using Polkadot.js Extension.
-     - `//Alice`:   `bottom drive obey lake curtain smoke basket hold race lonely fit walk`
-     - `//Bob`  :   `buyer proud better spawn cage door dragon field question original draft skull`
-     - `//Charlie`: `degree tackle suggest window test behind mesh extra shelf nuclear blush`
-     - `//Dave`:    `fox panel wisdom purchase plate gorilla pluck state acid limb draft erase`
-     - `//Eve`:     `bronze fuel primary one worth crisp where boring base device impact sugar`
-     - `//Ferdie`:  `crop vow release combine cancel jazz crisp ranch theory congress force fence`
-   - Each wallet contains 1,152,921,504,606,846,976 Plancks (~1.15 million UNITs).
-
-### 3. Deploy on Rococo Testnet (Optional)
-To deploy on Rococo instead of a local node:
-1. **Get ROC Tokens**:
-   - Request testnet tokens for your account from the Rococo faucet (e.g., via Polkadot Discord/matrix).
-2. **Modify `start.sh`**:
-   - Update the `--url` and `--suri` in the `cargo contract instantiate` command:
-     ```bash
-     --suri "your-seed-phrase" \
-     --url wss://rococo-contracts-rpc.polkadot.io \
-     ```
-   - Add gas limits:
-     ```bash
-     --gas 100000000000 --proof-size 1000000
-     ```
-   - Example command:
-     ```bash
-     cargo contract instantiate \
-       --suri "your-seed-phrase" \
-       --constructor new \
-       --args 1000000000000 100800 "[0, 1, 2]" \
-       --url wss://rococo-contracts-rpc.polkadot.io \
-       --execute \
-       --verbose \
-       --skip-confirm \
-       --gas 100000000000 \
-       --proof-size 1000000
-     ```
-3. **Update Frontend**:
-   - Manually update `frontend/config/contract-address.js` with the Rococo contract address.
-   - Serve the frontend with `frontend.sh` and connect to Rococo via Polkadot.js Extension.
+   - Open RPC tracker at `https://polkadot.js.org/apps/?rpc=ws://localhost:9944#/accounts` in a separate tab to move funds to simulate the governance tracker system.
 
 ## Usage
 
@@ -192,24 +164,38 @@ To deploy on Rococo instead of a local node:
 1. **Open the Frontend**:
    - Navigate to `http://localhost:8080`.
 2. **Connect Wallet**:
-   - Use Polkadot.js Extension to connect with `//Alice` or other accounts (or a funded account on Rococo).
-3. **Test Features**:
+   - Use Polkadot.js Extension to connect with an account.
+3. **Fund Wallet**:
+   - In the first run, the wallet is empty.
+   - To fund the wallet, open `https://polkadot.js.org/apps/?rpc=ws://localhost:9944#/accounts`.
+   - Click "Send" on any default dev account.
+   - In the "send to address" field, enter the wallet’s address.
+   - In the "amount" field, enter the desired amount to fund (ideally 1,000,000).
+   - Click "Make Transfer" then "Sign and Submit".
+   - The wallet is ready to interact with the contract.
+4. **Test Features**:
    - **Submit Proposal**: Enter a title and description, submit with 1 UNIT deposit.
-   - **Vote For/Against**: Select `Asset 0` (UNIT/ROC) or placeholders `1`, `2`, and stake ≥1 UNIT and vote for or against the proposal.
-   - **Close Vote**: As the creator or owner, close the proposal to tally votes and assign a `referendum_index` if it passes.
+   - **Vote For/Against**: Select `Asset 0` (UNIT) or placeholders `1`, `2`, and stake ≥1 UNIT and vote for or against the proposal. A wallet can vote as many times as possible, given each stake is more than 1 UNIT and its balance suffices.
+   - **Close Vote**: As the creator or owner, close the proposal to tally votes.
    - **Cancel Proposal**: Cancel an open proposal as the creator or owner.
-   - **View Details**: Check proposal status, vote totals (e.g., `Asset 0: 1.00 UNIT`), and referendum index.
+   - **View Details**: Check proposal status, vote totals (e.g., `Asset 0: 1.00 UNIT`), and referendum index (referendum index not implemented). Possible proposal statuses are as follows:
+     - Open: proposal is open to votes.
+     - Closed (in favor): proposal is finalized and accepted by consensus.
+     - Closed (against): proposal is finalized and rejected by consensus.
+     - Closed (indecision): proposal is closed and did not reach consensus.
+5. **Test Interaction with Other Wallets**:
+   - Create other wallets to simulate multiple parties' votes to the proposal.
 
 ### Manual Testing (Polkadot.js Apps)
 1. **Connect to Node**:
-   - Open [Polkadot.js Apps](https://polkadot.js.org/apps/) and connect to `ws://localhost:9944` (local) or `wss://rococo-contracts-rpc.polkadot.io` (Rococo).
+   - Open [Polkadot.js Apps](https://polkadot.js.org/apps/) and connect to `ws://localhost:9944`.
 2. **Upload Contract**:
    - Go to “Contracts” > “Upload & deploy code”.
    - Upload `target/ink/governance_tracker.wasm` and `governance_tracker.json`.
 3. **Call Messages**:
    - Query `get_supported_assets` (should return `[0, 1, 2]`).
    - Submit a proposal with `submit_proposal`.
-   - Vote with `vote_for` or `vote_against` using `asset_id: 0` (UNIT/ROC).
+   - Vote with `vote_for` or `vote_against` using `asset_id: 0` (UNIT).
    - Check `CrossChainMessage` events in the chain’s event log.
 
 ## Project Structure
@@ -219,11 +205,71 @@ To deploy on Rococo instead of a local node:
 - `frontend.sh`: Script to build and serve the frontend.
 - `frontend/main.js`: Frontend logic for interacting with the contract.
 - `frontend/config/contract-address.js`: Stores the deployed contract address.
-- `frontend/public/target/ink/governance_tracker.json`: Contract metadata for frontend.
+- `frontend/public/target/ink/governance_tracker.json`: Contract metadata for frontend (automatically generated).
+
+## Hackathon Submission Details
+
+### Source Code
+- Repository: [https://github.com/Dcwind/polkadot-sc-up](https://github.com/Dcwind/polkadot-sc-up)
+- Key Files:
+  - Contract: `lib.rs`
+  - Scripts: `start.sh`, `frontend.sh`
+  - Frontend: `frontend/main.js`
+
+### AI Tools Used
+- **Claude AI Sonnet 3.7**: for template generation.
+- **Grok 3**: for debugging, content, and scripts generation.
+- **ChatGPT-4-turbo**: for proofreading and optimization.
+
+### References and Citations
+- **ink! Documentation**:
+  - [ink! Official Documentation](https://use.ink/) for contract development, storage, and event handling.
+  - [ink! Examples](https://github.com/paritytech/ink-examples) for reference on `Mapping` and events.
+- **Polkadot/Substrate Documentation**:
+  - [Polkadot Wiki - Smart Contracts](https://wiki.polkadot.network/docs/learn-smart-contracts) for PVM and ink! basics.
+  - [Substrate Contracts Node](https://github.com/paritytech/substrate-contracts-node) for local node setup.
+  - [Polkadot.js API](https://polkadot.js.org/docs/api) for frontend integration with `@polkadot/api` and `@polkadot/extension-dapp`.
+- **Multi-Asset and Governance**:
+  - [Pallets](https://docs.substrate.io/reference/frame-pallets/) for multi-asset concepts and governance simulation.
+
+### Code Attribution
+- No external code was directly reused from other sources.
+- The contract (`lib.rs`) was built from scratch, inspired by ink! examples (e.g., storage mappings, events) but customized for governance and multi-asset voting.
+- The frontend (`main.js`) uses `@polkadot/api` and `@polkadot/extension-dapp` libraries, with logic adapted from Polkadot.js documentation examples.
+- Scripts (`start.sh`, `frontend.sh`) were generated with AI assistance (Grok 3) tailored to the project’s requirements.
+
+### Developer Experience (DevEx) on Polkadot Smart Contracts
+- **Strengths**:
+  - **ink! Ergonomics**: The Rust-based DSL simplifies contract development with macros (`#[ink::contract]`) and abstractions like `Mapping` and events, making it approachable for Rust developers. Its verbosity seems to bring benefit in terms of code and logic correctness.
+  - **Polkadot.js Ecosystem**: The `@polkadot/api` and `@polkadot/extension-dapp` libraries enabled seamless frontend integration, particularly for wallet connections and contract interactions.
+  - **Local Development**: `substrate-contracts-node --dev` provided a fast, pre-funded environment (e.g., `//Alice`, `//Bob`) for testing, reducing setup friction.
+  - **Community Resources**: The Polkadot Wiki and ink! documentation offered clear starting points for contract structure and deployment.
+- **Middle Ground**:
+  - **Debugging Tooling**: Error messages in `cargo-contract` are often clear and very structured (shown by the error codes), yet sometimes obscure. For example, an error like `Invalid metadata: expected type InkEvent, found Enum` during contract compilation was precise about the issue (mismatched event metadata) but lacked context on how to resolve it (e.g., checking `#[ink(event)]` annotations). This required cross-referencing forums and GitHub issues.
+- **Challenges**:
+  - **Rust Learning Curve**: Rust’s ownership rules (e.g., avoiding moved value errors) required careful handling of types like `String` in `lib.rs`, posing a barrier for non-Rust developers.
+  - **Slow compilation time**: Compiling and building projects, as apparent in Rust development, are slower than Solidity.
+  - **Chain Extension Limitations**: Simulating Democracy pallet integration was constrained without chain extensions, which are complex and underdocumented. Moreover, multiple assets
+  - **Polkadot.{js}** browser extension shows no details about the wallet (multi-asset balance), list of transactions, etc.
+  - **Access to Wallet Information**: the project was supposed to have a function that pulls information about a wallet (balance, transactions), but it was rather difficult to find out how to perform such an action.
+  - **Non-UNIX support**: developing on Windows-based machines require WSL integration due to some library prerequisites relying on UNIX-only commands. The discrepancy between Windows and WSL file systems sometimes broke development pipeline.
+- **Overall**: ink! and Polkadot provide a powerful platform for smart contracts, but the DevEx would benefit from more beginner-friendly tools and documentation to broaden adoption.
+
+### Suggestions for Polkadot Tooling and Documentation
+- **Tooling Improvements**:
+  - **Clearer Error Messages**: Enhance `cargo-contract` to provide descriptive errors (e.g., for encoding issues like `UInt cannot be encoded as an array`) with suggested fixes. It is also beneficial to develop a `cargo-contract` debug mode to trace contract execution and storage changes.
+  - **Gas Estimation Tool**: Add a `cargo-contract` feature to estimate gas limits for deployment and calls, minimizing manual tuning.
+  - **Frontend Templates**: Offer official Vite/React templates for Polkadot.js-based frontends to simplify UI development.
+  - **Polkadot.{js} Extension**: provide users with more detailed information regarding accounts, for example, multi-asset wallet balance, list of transactions, and more seamless integration with dApps. Compare Metamask.
+- **Documentation Enhancements**:
+  - **Comprehensive Tutorials**: Create end-to-end guides covering prerequisite installation both in UNIX-based system and Windows (Docker, etc.), contract development, frontend integration, and local testing in a single workflow.
+  - **Chain Extension Examples**: Provide detailed tutorials on building chain extensions for pallets like `pallet_democracy` and `pallet-assets`.
+  - **Error Troubleshooting**: Add a dedicated section in the ink! docs for common errors (e.g., Rust ownership, metadata issues).
+  - **Multi-Asset Integration**: Include ink! examples for interacting with `pallet-assets` to support real tokens beyond UNIT.
 
 ## Bounty Alignment (Polkadot and Smart Contracts Sub-Track)
 - **Multi-Asset Voting**:
-  - Implemented in `vote_for` and `vote_against` (`lib.rs`, lines 183–257), supporting `asset_id: 0` (UNIT/ROC) and placeholders `1`, `2`.
+  - Simulated in `vote_for` and `vote_against` (`lib.rs`, lines 183–257), supporting `asset_id: 0` (UNIT) and placeholders `1`, `2`.
   - Frontend displays votes per asset (e.g., `Asset 0: 1.00 UNIT`).
 - **Democracy Pallet Integration**:
   - Simulated in `close_vote` (`lib.rs`, lines 260–294), assigning `referendum_index` for passing proposals.
@@ -242,7 +288,6 @@ To deploy on Rococo instead of a local node:
 - **Deployment Fails**:
   - Check `start.sh` output for errors.
   - Verify `substrate-contracts-node` is running (`ws://localhost:9944`).
-  - For Rococo, ensure the account has ROC tokens.
 - **Frontend Errors**:
   - Run `frontend.sh` after `start.sh` to ensure artifacts exist.
   - Check browser console for JavaScript errors.
@@ -254,8 +299,12 @@ To deploy on Rococo instead of a local node:
 ## Future Improvements
 - **Full Democracy Pallet Integration**: Add a chain extension to call `pallet_democracy::propose`.
 - **XCM Integration**: Implement XCM dispatch for `CrossChainMessage` events.
-- **Real Assets**: Integrate with `pallet-assets` for non-native tokens on Rococo.
+- **Real Assets**: Integrate with `pallet-assets` for non-native tokens.
+- **More Balanced Staking System**: refundable staking instead of 'paying to vote' and never get the staked fund back.
 - **Enhanced Frontend**: Add event listeners for `CrossChainMessage` and improve UX.
 
 ## License
 MIT License. See `LICENSE` for details.
+
+## Contact
+For questions or contributions, contact Damian Satya at [umumlar5@gmail.com].
