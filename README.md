@@ -250,7 +250,7 @@ The `frontend.sh` script builds the frontend and serves it via Nginx on `http://
 - **Middle Ground**:
   - **Debugging Tooling**: Error messages in `cargo-contract` are often clear and very structured (shown by the error codes), yet sometimes obscure. For example, an error like `Invalid metadata: expected type InkEvent, found Enum` during contract compilation was precise about the issue (mismatched event metadata) but lacked context on how to resolve it (e.g., checking `#[ink(event)]` annotations). This required cross-referencing forums and GitHub issues.
 - **Challenges**:
-  - **Rust Learning Curve**: Rust’s ownership rules (e.g., avoiding moved value errors) required careful handling of types like `String` in `lib.rs`, posing a barrier for non-Rust developers.
+  - **PAPI (polkadot-api) learning curve**: the project was supposed to use pure PAPI rather than the currently implemented server in Vite, due to the Polkadot API having many special concepts unfamiliar to non-Polkadot developers.
   - **Slow compilation time**: Compiling and building projects, as apparent in Rust development, are slower than Solidity.
   - **Chain Extension Limitations**: Simulating Democracy pallet integration was constrained without chain extensions, which are complex and underdocumented. Moreover, multiple assets
   - **Polkadot.{js}** browser extension shows no details about the wallet (multi-asset balance), list of transactions, etc.
@@ -265,7 +265,7 @@ The `frontend.sh` script builds the frontend and serves it via Nginx on `http://
   - **Frontend Templates**: Offer official Vite/React templates for Polkadot.js-based frontends to simplify UI development.
   - **Polkadot.{js} Extension**: provide users with more detailed information regarding accounts, for example, multi-asset wallet balance, list of transactions, and more seamless integration with dApps. Compare Metamask.
 - **Documentation Enhancements**:
-  - **Comprehensive Tutorials**: Create end-to-end guides covering prerequisite installation both in UNIX-based system and Windows (Docker, etc.), contract development, frontend integration, and local testing in a single workflow.
+  - **Comprehensive Tutorials**: Create end-to-end guides covering prerequisite installation both in UNIX-based system and Windows (Docker, etc.), contract development, frontend integration, and local testing in a single workflow. A guide to integrate PAPI with frontend would also help onboarding newcomers to implementing PAPI in projects that require backend and frontend.
   - **Chain Extension Examples**: Provide detailed tutorials on building chain extensions for pallets like `pallet_democracy` and `pallet-assets`.
   - **Error Troubleshooting**: Add a dedicated section in the ink! docs for common errors (e.g., Rust ownership, metadata issues).
   - **Multi-Asset Integration**: Include ink! examples for interacting with `pallet-assets` to support real tokens beyond UNIT.
