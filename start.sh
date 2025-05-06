@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set PATH to include Rust toolchain and substrate-contracts-node
-export PATH=$PATH:/home/ubantu/.cargo/bin:/usr/local/bin
+export PATH="$PATH:$HOME/.cargo/bin:/usr/local/bin:/usr/bin"
 
 # Verify substrate-contracts-node
 if ! command -v substrate-contracts-node &> /dev/null; then
